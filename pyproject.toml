@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "rocket-man"
+version = "0.1.0"
+description = "Rocket-loving bot based on BERNARD Framework"
+license = "AGPL-3.0-only"
+authors = ["Danilo Gómez <danilogomez3.14@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/nilox94/rocket-man.git"
+keywords = ["chatbot"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Communications :: Chat",
+    "Typing :: Typed",
+]
+packages = [{include = "rocket_man"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+bernard = {git = "https://github.com/nilox94/bernard.git", rev = "feature/resume-deferred-tasks"}
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+mypy = "^1.4.1"
+pre-commit = "^3.3.3"
+commitizen = "^3.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py311', 'py312']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
