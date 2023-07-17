@@ -23,12 +23,16 @@ packages = [{include = "rocket_man"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pydantic = "^2.0.3"
+pydantic-settings = "^2.0.2"
 bernard = {git = "https://github.com/nilox94/bernard.git", rev = "feature/resume-deferred-tasks"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
 isort = "^5.12.0"
 mypy = "^1.4.1"
+stackprinter = "^0.2.10"
+sentry-sdk = "^1.28.1"
 pre-commit = "^3.3.3"
 commitizen = "^3.5.3"
 
@@ -38,8 +42,20 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 120
-target-version = ['py311', 'py312']
+target-version = [
+    "py311",
+    # "py312",
+]
 include = '\.pyi?$'
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+ignore_missing_imports = true
+plugins = [
+    "pydantic.mypy"
+]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
