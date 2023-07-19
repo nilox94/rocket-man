@@ -1,3 +1,18 @@
 ERROR,Woops. Something went wrong.
-CONFUSED,It seems that I can't understand what you're saying. Please try another way to say it.
-HELLO,Hello!
+CONFUSED,"It seems that I can't understand what you're saying.
+Please try another way to say it."
+HELLO,"Hello!
+I'd like to show you pictures of a rocket launch and ask you if it has launched yet.
+What do you say?"
+HAS_LAUNCHED,"`[{step}]`
+Has [the rocket]({url}) launched yet?"
+YES,Yes
+NO,No
+MAYBE_HAS_LAUNCHED,"It looks like you were in the middle of something, but I forgot what.
+Would you like to start over?"
+WIN,"Thanks, you helped me find the right frame in {step} steps\!
+[This]({url}) is the picture I was looking for\.
+Wanna try again?"
+GOODBYE,"Goodbye!
+I hope you enjoyed the rocket launch.
+See you next time!"

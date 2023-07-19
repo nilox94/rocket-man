@@ -9,7 +9,7 @@ from bernard.platforms.telegram import layers as tgr
 from rocket_man.services import FrameXService
 from rocket_man.store import HasLaunchedContext
 from rocket_man.store import context_store as cs
-from rocket_man.utils import md_link
+from rocket_man.utils import escape_md_link
 
 
 class RocketManState(BaseState):
@@ -54,15 +54,7 @@ class Hello(RocketManState):
     @page_view("/bot/hello")
     async def handle(self):
         self.send(
-            lyr.Text(
-                "\n".join(
-                    [
-                        "Hello!",
-                        "I'd like to show you pictures of a rocket launch and ask you if it has launched yet.",
-                        "What do you say?",
-                    ]
-                )
-            ),
+            lyr.Text(t.HELLO),
             has_launched_or_goodbye(),
         )
 
@@ -70,17 +62,7 @@ class Hello(RocketManState):
 class Goodbye(RocketManState):
     @page_view("/bot/goodbye")
     async def handle(self):
-        self.send(
-            lyr.Text(
-                "\n".join(
-                    [
-                        "Goodbye!",
-                        "I hope you enjoyed the rocket launch.",
-                        "See you next time!",
-                    ]
-                )
-            ),
-        )
+        self.send(lyr.Text(t.GOODBYE))
 
 
 def has_launched_or_goodbye():
@@ -88,11 +70,11 @@ def has_launched_or_goodbye():
         [
             [
                 tgr.InlineKeyboardCallbackButton(
-                    text="YAY",
+                    text=t.YES,
                     payload={"action": "has_launched"},
                 ),
                 tgr.InlineKeyboardCallbackButton(
-                    text="NAY",
+                    text=t.NO,
                     payload={"action": "goodbye"},
                 ),
             ]
@@ -110,16 +92,8 @@ class MaybeHasLaunched(RocketManState):
     @page_view("/bot/maybe_has_launched")
     @cs.inject()
     async def handle(self, context: HasLaunchedContext) -> None:
-        print("Maybe Has Launched?")
         self.send(
-            lyr.Text(
-                "\n".join(
-                    [
-                        "It looks like you were in the middle of something, but I forgot what.",
-                        "Would you like to start over?",
-                    ]
-                )
-            ),
+            lyr.Text(t.MAYBE_HAS_LAUNCHED),
             has_launched_or_goodbye(),
         )
 
@@ -141,6 +115,7 @@ class HasLaunched(RocketManState):
             hi = context["hi"]
             mid = context["mid"]
             video_name = context["video_name"]
+
             if cond == "ge":
                 hi = mid
             else:
@@ -150,44 +125,40 @@ class HasLaunched(RocketManState):
             # choose a random image
             async with FrameXService() as fx:
                 videos = await fx.list_videos()
-                vid = random.choice(videos)
-                lo, hi = 0, vid.frames
-                video_name = vid.name
-                context["video_name"] = video_name
+            vid = random.choice(videos)
 
-        step += 1
+            context["video_name"] = video_name = vid.name
+            lo, hi = 0, vid.frames
+
+        mid = (lo + hi) // 2
+        frame_url = FrameXService.get_video_frame_url(video_name, mid)
+        frame_url = escape_md_link(frame_url)
+
         if lo == hi:
             context.clear()
             self.send(
-                lyr.Text(f"Thanks!\nYou helped me find the right frame in {step} steps!\nWanna try again?"),
+                lyr.Markdown(t("WIN", url=frame_url, step=step - 1)),
                 has_launched_or_goodbye(),
             )
             return
 
         context["lo"] = lo
         context["hi"] = hi
-        context["mid"] = mid = (lo + hi) // 2
-        context["step"] = step
+        context["mid"] = mid
+        context["step"] = step + 1
 
-        frame_url = FrameXService.get_video_frame_url(video_name, mid)
         self.send(
-            lyr.Markdown(f"Has {md_link(frame_url, 'the rocket')} launched yet?"),
+            lyr.Markdown(t("HAS_LAUNCHED", url=frame_url, step=step)),
             tgr.InlineKeyboard(
                 [
                     [
                         tgr.InlineKeyboardCallbackButton(
-                            text="YES",
-                            payload=dict(
-                                action="has_launched",
-                                cond="ge",
-                            ),
+                            text=t.YES,
+                            payload={"action": "has_launched", "cond": "ge"},
                         ),
                         tgr.InlineKeyboardCallbackButton(
-                            text="NO",
-                            payload=dict(
-                                action="has_launched",
-                                cond="lt",
-                            ),
+                            text=t.NO,
+                            payload={"action": "has_launched", "cond": "lt"},
                         ),
                     ]
                 ]

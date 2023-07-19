@@ -2,6 +2,8 @@ import logging
 
 import ujson
 from aiohttp.web_request import Request
+from bernard.i18n import render
+from bernard.i18n import translate as t
 from bernard.layers import Stack
 from bernard.platforms.telegram.platform import Telegram
 
@@ -20,31 +22,28 @@ class RocketTg(Telegram):
 
         await self._send_text(request, stack, "MarkdownV2")
 
-    async def call(self, method: str, _ignore: set[str] | None = None, **params: dict):
+    async def send(self, request: Request, stack: Stack) -> None:
         """
-        Call a telegram method
+        Send a stack to the platform.
 
-        :param _ignore: List of reasons to ignore
-        :param method: Name of the method to call
-        :param params: Dictionary of the parameters to send
-
-        :return: Returns the API response
+        Actually this will delegate to one of the `_send_*` functions depending
+        on what the stack looks like.
         """
         try:
-            return await super().call(method, _ignore, **params)
+            return await super().send(request, stack)
         except Exception as err:
-            logger.exception("Telegram API call failed")
-            await self.send_failure(params["chat_id"])
+            logger.exception("Error sending message to Telegram")
+            await self.send_failure(request)
             raise err
 
-    async def send_failure(self, chat_id: int):
+    async def send_failure(self, request: Request):
         """
         Sends a failure message to the user
         """
         method = "sendMessage"
         params = {
-            "chat_id": chat_id,
-            "text": "You broke the bot!\nNice job :D\nTry again later.",
+            "chat_id": request.message.get_chat_id(),
+            "text": await render(t.ERROR, request),
         }
 
         logger.debug("Calling Telegram %s(%s)", method, params)
