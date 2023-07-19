@@ -7,6 +7,8 @@ from bernard.i18n import translate as t
 from bernard.platforms.telegram import layers as tgr
 
 from rocket_man.services import FrameXService
+from rocket_man.store import HasLaunchedContext
+from rocket_man.store import context_store as cs
 from rocket_man.utils import url_to_markdown
 
 
@@ -84,22 +86,22 @@ class HasLaunched(RocketManState):
     """
 
     @page_view("/bot/has_launched")
-    async def handle(self) -> None:
+    @cs.inject()
+    async def handle(self, context: HasLaunchedContext) -> None:
         print("Has Launched?")
 
-        step = 1
-        if self.request.has_layer(lyr.Postback):
-            payload = self.request.get_layer(lyr.Postback).payload
-            print("Postback", payload)
-            step = payload.get("step")
-            if isinstance(step, int) and step > 1:
-                lo = payload.get("lo")
-                hi = payload.get("hi")
-                mid = payload.get("mid")
-                cond = payload.get("cond")
-                video_name = payload.get("video_name")
-                if lo is None or hi is None or cond is None or video_name is None:
-                    step = 1
+        payload = self.request.get_layer(lyr.Postback).payload
+        print("Postback", payload, context)
+        step = context.get("step", 1)
+        cond = payload.get("cond")
+        if step > 1 and cond is not None:
+            lo = context["lo"]
+            hi = context["hi"]
+            mid = context["mid"]
+            video_name = context["video_name"]
+        else:
+            step = 1
+
         if step == 1:
             # choose a random image
             async with FrameXService() as fx:
@@ -107,7 +109,7 @@ class HasLaunched(RocketManState):
                 vid = random.choice(videos)
                 lo, hi = 0, vid.frames
                 video_name = vid.name
-                cond = None
+                context["video_name"] = video_name
         else:
             if cond == "ge":
                 hi = mid
@@ -116,17 +118,19 @@ class HasLaunched(RocketManState):
 
         step += 1
         if lo == hi:
+            context.clear()
             self.send(
-                lyr.Text("Thanks!"),
-                lyr.Text("You helped me find the right frame in {step} steps!"),
-                lyr.Text("Wanna try again?"),
+                lyr.Text(f"Thanks!\nYou helped me find the right frame in {step} steps!\nWanna try again?"),
                 has_launched_or_good_bye(),
             )
             return
 
-        mid = (lo + hi) // 2
-        frame_url = FrameXService.get_video_frame_url(video_name, mid)
+        context["lo"] = lo
+        context["hi"] = hi
+        context["mid"] = mid = (lo + hi) // 2
+        context["step"] = step
 
+        frame_url = FrameXService.get_video_frame_url(video_name, mid)
         self.send(
             lyr.Markdown(f"Has [the rocket]({url_to_markdown(frame_url)}) launched yet?"),
             tgr.InlineKeyboard(
@@ -136,24 +140,14 @@ class HasLaunched(RocketManState):
                             text="YES",
                             payload=dict(
                                 action="has_launched",
-                                lo=lo,
-                                hi=hi,
-                                mid=mid,
                                 cond="ge",
-                                step=step,
-                                video_name=video_name,
                             ),
                         ),
                         tgr.InlineKeyboardCallbackButton(
                             text="NO",
                             payload=dict(
                                 action="has_launched",
-                                lo=lo,
-                                hi=hi,
-                                mid=mid,
                                 cond="lt",
-                                step=step,
-                                video_name=video_name,
                             ),
                         ),
                     ]
