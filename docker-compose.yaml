@@ -1,0 +1,23 @@
+
+services:
+  bot:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      BERNARD_BASE_URL: ${BERNARD_BASE_URL}
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      WEBVIEW_SECRET_KEY: ${WEBVIEW_SECRET_KEY}
+      SENTRY_DSN: ${SENTRY_DSN}
+
+      BIND_HOST: ${BIND_HOST}
+      BIND_PORT: ${BIND_PORT}
+
+      REDIS_URL: ${REDIS_URL}
+
+    command: ["python", "manage.py", "run"]
+
+  redis:
+    image: redis:6.0.20-alpine3.18

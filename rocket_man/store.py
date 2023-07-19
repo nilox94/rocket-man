@@ -24,7 +24,10 @@ class ContextStore(RedisContextStore, Generic[Context]):
     ttl: int
 
     def __init__(
-        self, name: str = "default", ttl: int = settings.CONTEXT_DEFAULT_TTL, params: dict = settings.REDIS_PARAMS
+        self,
+        name: str = "default",
+        ttl: int = settings.CONTEXT_DEFAULT_TTL,
+        params: dict = settings.REGISTER_STORE["params"],
     ):
         """
         Create a context store with the given parameters.

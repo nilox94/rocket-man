@@ -2,7 +2,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Any
 
-from pydantic import HttpUrl, field_validator
+from pydantic import HttpUrl, RedisDsn, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,21 +16,16 @@ i18n_root = project_root / "i18n"
 # --- Environment variables ---
 
 
-class RedisSettings(BaseSettings):
-    host: str = "localhost"
-    port: int = 6379
-    db_id: int = 0
-    min_pool_size: int = 5
-    max_pool_size: int = 10
-
-
 class Settings(BaseSettings):
     """
     This class contains all the settings for the bot.
     You can override them using environment variables or a `.env` file.
     """
 
-    model_config = SettingsConfigDict(env_file=project_root / ".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=project_root / ".env",
+        env_file_encoding="utf-8",
+    )
 
     debug: bool = False
     code_live_reload: bool = False  # for now, only supported on Linux & Python < 3.11
@@ -44,7 +39,7 @@ class Settings(BaseSettings):
     bind_host: str = "127.0.0.1"
     bind_port: int = 8080
 
-    redis: RedisSettings = RedisSettings()
+    redis_url: RedisDsn = "redis://localhost:6379/0"  # type: ignore[assignment]
 
     fb_page_token: str = ""
     fb_app_id: str = ""
@@ -199,7 +194,15 @@ else:
         "port": env.bind_port,
     }
 
-REDIS_PARAMS = env.redis.model_dump()
+# By default, store the register in local redis
+REGISTER_STORE = {
+    "class": "bernard.storage.register.RedisRegisterStore",
+    "params": {
+        "host": env.redis_url.host,
+        "port": env.redis_url.port,
+        "db_id": int((env.redis_url.path)[1:]),  # type: ignore[index]
+    },
+}
 
 # --- Natural language understanding/generation ---
 
