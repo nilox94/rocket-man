@@ -1,11 +1,11 @@
-from typing import Generic, TypedDict, TypeVar
+from typing import Generic, Mapping, TypedDict, TypeVar
 
 import ujson
 from bernard.conf import settings
 from bernard.storage.context import RedisContextStore
 from redis.asyncio import Redis
 
-Context = TypeVar("Context", bound=TypedDict)
+Context = TypeVar("Context", bound=Mapping)
 
 
 class ContextStore(RedisContextStore, Generic[Context]):

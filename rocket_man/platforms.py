@@ -42,7 +42,7 @@ class RocketTg(Telegram):
         """
         method = "sendMessage"
         params = {
-            "chat_id": request.message.get_chat_id(),
+            "chat_id": request.message.get_chat_id(),  # type: ignore[attr-defined]
             "text": await render(t.ERROR, request),
         }
 
