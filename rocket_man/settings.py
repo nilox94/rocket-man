@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=project_root / ".env", env_file_encoding="utf-8")
 
-    debug: bool = True
+    debug: bool = False
     code_live_reload: bool = False  # for now, only supported on Linux & Python < 3.11
 
     bernard_base_url: HttpUrl | None = None
@@ -155,7 +155,7 @@ if env.fb_page_token:
 if env.telegram_token:
     PLATFORMS.append(
         {
-            "class": "bernard.platforms.telegram.platform.Telegram",
+            "class": "rocket_man.platforms.RocketTg",
             "settings": {
                 "token": env.telegram_token,
             },
@@ -218,7 +218,7 @@ I18N_TRANSLATION_LOADERS = [
 # All your middlewares. The default ones are here to slow down the sending of
 # messages and make it look more natural.
 MIDDLEWARES = [
-    "bernard.middleware.AutoSleep",
+    # "bernard.middleware.AutoSleep",
     "bernard.middleware.AutoType",
 ]
 
