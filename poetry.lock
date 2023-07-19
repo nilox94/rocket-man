@@ -1538,6 +1538,17 @@ files = [
 ]
 
 [[package]]
+name = "types-ujson"
+version = "5.8.0.0"
+description = "Typing stubs for ujson"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-ujson-5.8.0.0.tar.gz", hash = "sha256:2856a8d0883475bec80c1ac772c006ea691215cc55ded21647b5c87c86249cbb"},
+    {file = "types_ujson-5.8.0.0-py3-none-any.whl", hash = "sha256:481c27a7bc758fc94de330dcd885ba2fbf5879dd3dfd1c7b6b46f5b98d41ca85"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -1836,4 +1847,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fe02e791f03a8b0ab67f77cfa63a335aab53c0ec96678fe3b12335974fd531f0"
+content-hash = "c872060ac3278241942805bb9c02ee154db2f5f44615cb999f9e1cdf2d430467"
