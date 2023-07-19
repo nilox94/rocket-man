@@ -16,6 +16,14 @@ i18n_root = project_root / "i18n"
 # --- Environment variables ---
 
 
+class RedisSettings(BaseSettings):
+    host: str = "localhost"
+    port: int = 6379
+    db_id: int = 0
+    min_pool_size: int = 5
+    max_pool_size: int = 10
+
+
 class Settings(BaseSettings):
     """
     This class contains all the settings for the bot.
@@ -35,6 +43,8 @@ class Settings(BaseSettings):
     socket_path: Path | None = None
     bind_host: str = "127.0.0.1"
     bind_port: int = 8080
+
+    redis: RedisSettings = RedisSettings()
 
     fb_page_token: str = ""
     fb_app_id: str = ""
@@ -188,6 +198,8 @@ else:
         "host": env.bind_host,
         "port": env.bind_port,
     }
+
+REDIS_PARAMS = env.redis.model_dump()
 
 # --- Natural language understanding/generation ---
 
