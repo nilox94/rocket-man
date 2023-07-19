@@ -8,8 +8,9 @@ md_link_escape_table = str.maketrans(
 )
 
 
-def url_to_markdown(url: URL) -> str:
+def md_link(url: URL, text: str = "") -> str:
     """
-    Convert an URL to a Markdown link.
+    Convert a URL to a Markdown link.
     """
-    return str(url).translate(md_link_escape_table)
+    escaped = str(url).translate(md_link_escape_table)
+    return f"[{text}]({escaped})"

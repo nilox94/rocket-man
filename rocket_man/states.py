@@ -9,7 +9,7 @@ from bernard.platforms.telegram import layers as tgr
 from rocket_man.services import FrameXService
 from rocket_man.store import HasLaunchedContext
 from rocket_man.store import context_store as cs
-from rocket_man.utils import url_to_markdown
+from rocket_man.utils import md_link
 
 
 class RocketManState(BaseState):
@@ -27,7 +27,6 @@ class RocketManState(BaseState):
         This happens when something goes wrong (it's the equivalent of the
         HTTP error 500).
         """
-        print("Error!")
         self.send(lyr.Text(t.ERROR))
 
     @page_view("/bot/confused")
@@ -36,7 +35,6 @@ class RocketManState(BaseState):
         This is called when the user sends a message that triggers no
         transitions.
         """
-        print("Confused!")
         self.send(lyr.Text(t.CONFUSED))
 
     async def handle(self) -> None:
@@ -56,53 +54,99 @@ class Hello(RocketManState):
     @page_view("/bot/hello")
     async def handle(self):
         self.send(
-            lyr.Text(t.HELLO),
-            lyr.Text("I'd like to show you pictures of a rocket launch and ask you if it has launched yet."),
-            lyr.Text("What do you say?"),
-            has_launched_or_good_bye(),
+            lyr.Text(
+                "\n".join(
+                    [
+                        "Hello!",
+                        "I'd like to show you pictures of a rocket launch and ask you if it has launched yet.",
+                        "What do you say?",
+                    ]
+                )
+            ),
+            has_launched_or_goodbye(),
         )
 
 
-def has_launched_or_good_bye():
+class Goodbye(RocketManState):
+    @page_view("/bot/goodbye")
+    async def handle(self):
+        self.send(
+            lyr.Text(
+                "\n".join(
+                    [
+                        "Goodbye!",
+                        "I hope you enjoyed the rocket launch.",
+                        "See you next time!",
+                    ]
+                )
+            ),
+        )
+
+
+def has_launched_or_goodbye():
     return tgr.InlineKeyboard(
         [
             [
                 tgr.InlineKeyboardCallbackButton(
                     text="YAY",
-                    payload={"action": "has_launched", "step": 1},
+                    payload={"action": "has_launched"},
                 ),
                 tgr.InlineKeyboardCallbackButton(
                     text="NAY",
-                    payload={"action": "good_bye"},
+                    payload={"action": "goodbye"},
                 ),
             ]
         ]
     )
 
 
+class MaybeHasLaunched(RocketManState):
+    """ "
+    The user wants to see a picture of the rocket launch,
+    but we might have lost track of where they are in the process.
+    e.g. context has expired.
+    """
+
+    @page_view("/bot/maybe_has_launched")
+    @cs.inject()
+    async def handle(self, context: HasLaunchedContext) -> None:
+        print("Maybe Has Launched?")
+        self.send(
+            lyr.Text(
+                "\n".join(
+                    [
+                        "It looks like you were in the middle of something, but I forgot what.",
+                        "Would you like to start over?",
+                    ]
+                )
+            ),
+            has_launched_or_goodbye(),
+        )
+
+
 class HasLaunched(RocketManState):
     """
-    Example state that shows an image and a keyboard.
+    Ask the user if the rocket has launched yet.
     """
 
     @page_view("/bot/has_launched")
     @cs.inject()
     async def handle(self, context: HasLaunchedContext) -> None:
-        print("Has Launched?")
-
         payload = self.request.get_layer(lyr.Postback).payload
-        print("Postback", payload, context)
-        step = context.get("step", 1)
+
         cond = payload.get("cond")
-        if step > 1 and cond is not None:
+        if cond is not None:
+            step = context["step"]
             lo = context["lo"]
             hi = context["hi"]
             mid = context["mid"]
             video_name = context["video_name"]
+            if cond == "ge":
+                hi = mid
+            else:
+                lo = mid + 1
         else:
             step = 1
-
-        if step == 1:
             # choose a random image
             async with FrameXService() as fx:
                 videos = await fx.list_videos()
@@ -110,18 +154,13 @@ class HasLaunched(RocketManState):
                 lo, hi = 0, vid.frames
                 video_name = vid.name
                 context["video_name"] = video_name
-        else:
-            if cond == "ge":
-                hi = mid
-            else:
-                lo = mid + 1
 
         step += 1
         if lo == hi:
             context.clear()
             self.send(
                 lyr.Text(f"Thanks!\nYou helped me find the right frame in {step} steps!\nWanna try again?"),
-                has_launched_or_good_bye(),
+                has_launched_or_goodbye(),
             )
             return
 
@@ -132,7 +171,7 @@ class HasLaunched(RocketManState):
 
         frame_url = FrameXService.get_video_frame_url(video_name, mid)
         self.send(
-            lyr.Markdown(f"Has [the rocket]({url_to_markdown(frame_url)}) launched yet?"),
+            lyr.Markdown(f"Has {md_link(frame_url, 'the rocket')} launched yet?"),
             tgr.InlineKeyboard(
                 [
                     [
