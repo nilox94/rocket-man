@@ -186,7 +186,7 @@ WEBVIEW_SECRET_KEY = env.webview_secret_key
 
 if env.socket_path:
     SERVER_BIND: dict[str, Any] = {
-        "path": env.socket_path,
+        "path": str(env.socket_path),
     }
 else:
     SERVER_BIND = {
