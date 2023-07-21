@@ -1,22 +1,38 @@
 from bernard import layers as lyr
+from bernard.engine.request import Request
 from bernard.engine.triggers import BaseTrigger
 
-from rocket_man.store import HasLaunchedContext
-from rocket_man.store import context_store as cs
+from rocket_man.storage import HasLaunchedContext
+from rocket_man.storage import context_store as cs
 
 
-class MaybeHasLaunchedTrigger(BaseTrigger):
-    @cs.inject()
-    async def rank(self, context: dict) -> float:
+class ActionSrcTrigger(BaseTrigger):
+    def __init__(self, request: Request, action: str):
+        super().__init__(request)
+        self.action = action
+
+    async def rank(self) -> float:
         if not self.request.has_layer(lyr.Postback):
             # action did not come from a button
             return 0.0
 
         payload = self.request.get_layer(lyr.Postback).payload
 
-        if payload.get("action") != "has_launched":
-            # action is not "has_launched"
+        if payload.get("action") != self.action:
+            # bad action
             return 0.0
+
+        return 1.0
+
+
+class MaybeHasLaunchedTrigger(ActionSrcTrigger):
+    @cs.inject()
+    async def rank(self, context: dict) -> float:
+        rank = await super().rank()
+        if rank == 0.0:
+            return 0.0
+
+        payload = self.request.get_layer(lyr.Postback).payload
 
         if payload.get("cond") is None:
             # must show the first frame
@@ -31,18 +47,14 @@ class MaybeHasLaunchedTrigger(BaseTrigger):
         return 0.0
 
 
-class HasLaunchedTrigger(BaseTrigger):
+class HasLaunchedTrigger(ActionSrcTrigger):
     @cs.inject()
     async def rank(self, context: HasLaunchedContext) -> float:
-        if not self.request.has_layer(lyr.Postback):
-            # action did not come from a button
+        rank = await super().rank()
+        if rank == 0.0:
             return 0.0
 
         payload = self.request.get_layer(lyr.Postback).payload
-
-        if payload.get("action") != "has_launched":
-            # action is not "has_launched"
-            return 0.0
 
         cond = payload.get("cond")
         if cond is None:

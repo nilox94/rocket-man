@@ -1,13 +1,9 @@
-from logging import getLogger
 from pathlib import Path
 from typing import Any
 
 from pydantic import HttpUrl, RedisDsn, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-logger = getLogger(__name__)
-
 
 project_root = Path(__file__).parent.parent
 i18n_root = project_root / "i18n"
@@ -194,14 +190,21 @@ else:
         "port": env.bind_port,
     }
 
+REDIS_PARAMS = {
+    "redis_url": env.redis_url.unicode_string(),
+    "ttl": 20 * 60,
+}
+
 # By default, store the register in local redis
 REGISTER_STORE = {
-    "class": "bernard.storage.register.RedisRegisterStore",
-    "params": {
-        "host": env.redis_url.host,
-        "port": env.redis_url.port,
-        "db_id": int((env.redis_url.path)[1:]),  # type: ignore[index]
-    },
+    "class": "rocket_man.storage.RegisterStore",
+    "params": REDIS_PARAMS,
+}
+
+# By default, store the context in local redis
+CONTEXT_STORE = {
+    "class": "rocket_man.storage.ContextStore",
+    "params": REDIS_PARAMS,
 }
 
 # --- Natural language understanding/generation ---

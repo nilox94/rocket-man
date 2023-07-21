@@ -4,7 +4,7 @@ from bernard.i18n import translate as t
 
 from rocket_man.states.base import RocketManState
 from rocket_man.states.common import has_launched_or_goodbye
-from rocket_man.store import context_store as cs
+from rocket_man.storage import context_store as cs
 
 
 class MaybeHasLaunched(RocketManState):

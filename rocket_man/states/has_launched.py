@@ -8,8 +8,8 @@ from bernard.platforms.telegram import layers as tgr
 from rocket_man.services import FrameXService
 from rocket_man.states.base import RocketManState
 from rocket_man.states.common import has_launched_or_goodbye
-from rocket_man.store import HasLaunchedContext
-from rocket_man.store import context_store as cs
+from rocket_man.storage import HasLaunchedContext
+from rocket_man.storage import context_store as cs
 from rocket_man.utils import escape_md_link
 
 

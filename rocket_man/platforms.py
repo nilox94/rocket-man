@@ -19,7 +19,6 @@ class RocketTg(Telegram):
         """
         Sends Markdown using `_send_text()`
         """
-
         await self._send_text(request, stack, "MarkdownV2")
 
     async def send(self, request: Request, stack: Stack) -> None:

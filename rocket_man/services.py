@@ -8,7 +8,7 @@ from rocket_man.schemas import Video
 
 
 class FrameXService:
-    """ "
+    """
     FrameX API service.
     It allows downloading videos, frame by frame.
     """
