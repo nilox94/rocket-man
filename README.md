@@ -1,7 +1,6 @@
 # Rocket Man 🚀
 Rocket-loving bot based on [BERNARD](https://github.com/BernardFW/bernard) Framework.
 
-You can find the bot on Telegram at https://t.me/RocketManTgBot.
 
 <img alt="Rocket Man" src="https://github.com/nilox94/rocket-man/assets/6260113/0a622250-2c40-4ca1-a202-4000955ca4cd" width="400">
 
@@ -21,12 +20,6 @@ The bot will then try to find the picture where the rocket has just launched in 
 | TELEGRAM_TOKEN     | Your Telegram bot token [obtained with @BotFather](https://core.telegram.org/bots/tutorial#obtain-your-bot-token) |
 | WEBVIEW_SECRET_KEY | A secret key used to sign the webview URL                                                                         |
 | SENTRY_DSN         | Your Sentry DSN (optional)                                                                                        |
-
-## Deployment
-The bot is deployed on Heroku using [DigitalOcean App Platform](https://www.digitalocean.com/go/app-platform).
-It just builds the Docker image and runs it using the environment variables defined in the app.
-You'd also need a Redis instance to store the bot's state (see [Managed Databases](https://docs.digitalocean.com/products/app-platform/how-to/manage-databases/)).
-The bot is also monitored using [Sentry](https://sentry.io/).
 
 ## Local development
 You can run the bot locally using Poetry:
